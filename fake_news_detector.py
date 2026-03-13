@@ -10,7 +10,6 @@ from sklearn.pipeline import Pipeline
 import nltk
 import matplotlib.pyplot as plt
 
-# Download necessary NLTK data
 nltk.download("punkt")
 nltk.download("punkt_tab")
 nltk.download("stopwords")
@@ -19,18 +18,15 @@ st.set_page_config(page_title="Fake News Detector", layout="wide")
 
 @st.cache_resource
 def train_model(num_samples):
-    # 1. Load Data
     true = pd.read_csv("News_dataset/True.csv", encoding='latin-1').fillna("")
     false = pd.read_csv("News_dataset/Fake.csv", encoding='latin-1').fillna("")
     true["true_or_false"] = "True"
     false["true_or_false"] = "False"
 
-    # 2. Combine and Sample
     data = pd.concat([true, false])
     actual_samples = min(num_samples, len(data))
     data = data.sample(n=actual_samples, random_state=42).reset_index(drop=True)
 
-    # 3. Preprocessing
     stop_words = set(stopwords.words('english'))
     def preprocess(text_input):
         tokens = word_tokenize(text_input)
@@ -39,13 +35,11 @@ def train_model(num_samples):
 
     data["content"] = (data["title"] + " " + data["text"]).apply(preprocess)
 
-    # 4. Prepare Features and Labels (THE FIX)
     X = data['content'].to_numpy()
     y = data["true_or_false"].to_numpy()
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # 5. Build Pipeline and Grid Search
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer()),
         ('clf', LogisticRegression(max_iter=1000))
@@ -67,11 +61,9 @@ def train_model(num_samples):
     gs.fit(X_train, y_train)
     return gs, X_test, y_test
 
-## --- Streamlit UI ---
 st.title("📰 Fake News Classifier")
 st.markdown("This app uses a Logistic Regression model with Grid Search to identify potentially false news articles.")
 
-# Sidebar for configuration
 with st.sidebar:
     st.header("Settings")
     num_samples = st.number_input("Enter number of samples:", min_value=10, max_value=40000, value=1000)
@@ -86,7 +78,6 @@ if train_btn or 'model' in st.session_state:
             st.session_state['y_test'] = y_test
         st.success("Model trained successfully!")
 
-    # Layout for Results
     col1, col2 = st.columns([1, 1])
 
     with col1:
@@ -103,7 +94,6 @@ if train_btn or 'model' in st.session_state:
 
     st.divider()
 
-    # Prediction Section
     st.subheader("Detect Fake News")
     user_input = st.text_area("Paste news content here:", placeholder="The moon is made of green cheese...")
 
