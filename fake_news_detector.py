@@ -11,15 +11,9 @@ import nltk
 import matplotlib.pyplot as plt
 
 # Download necessary NLTK data
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
-
-try:
-    nltk.data.find("corpora/stopwords")
-except LookupError:
-    nltk.download("stopwords")
+nltk.download("punkt")
+nltk.download("punkt_tab")
+nltk.download("stopwords")
 
 st.set_page_config(page_title="Fake News Detector", layout="wide")
 
